@@ -1,16 +1,9 @@
 import React from "react";
 import { Form, Formik } from "formik";
-import {
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
-} from "@chakra-ui/form-control";
-import { Input } from "@chakra-ui/input";
-import Wrapper from "../components/Wrapper";
+import { Wrapper } from "../components/Wrapper";
 import InputField from "../components/InputField";
 import { Box } from "@chakra-ui/layout";
 import { Button } from "@chakra-ui/button";
-import { useMutation } from "urql";
 import { useRegisterMutation } from "../generated/graphql";
 import { toErrorMap } from "../utils/toErrorMap";
 import { useRouter } from "next/dist/client/router";
