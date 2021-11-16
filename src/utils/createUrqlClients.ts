@@ -9,6 +9,26 @@ import {
   RegisterMutation,
 } from "../generated/graphql";
 import { betterUpdateQuery } from "./betterUpdateQuery";
+import { filter, pipe, tap } from "wonka";
+import { Exchange } from "urql";
+import Router, { useRouter } from "next/dist/client/router";
+
+const errorExchange: Exchange =
+  ({ forward }) =>
+  (ops$) => {
+    return pipe(
+      forward(ops$),
+      tap(({ error }) => {
+        // If the OperationResult has an error send a request to sentry
+        // console.log("ERROR HANDLER :: ", error);
+        if (error) {
+          if (error.message.includes("Not Authenticated")) {
+            Router.replace("/login");
+          }
+        }
+      })
+    );
+  };
 
 export const createUrqlClient: NextUrqlClientConfig = (ssrExchange: any) => ({
   url: "http://localhost:3000/graphql",
@@ -60,6 +80,7 @@ export const createUrqlClient: NextUrqlClientConfig = (ssrExchange: any) => ({
         },
       },
     }),
+    errorExchange,
     ssrExchange,
     fetchExchange,
   ],
