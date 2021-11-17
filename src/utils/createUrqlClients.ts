@@ -1,5 +1,11 @@
 import { dedupExchange, fetchExchange } from "@urql/core";
-import { cacheExchange, query } from "@urql/exchange-graphcache";
+import {
+  cacheExchange,
+  NullArray,
+  query,
+  Resolver,
+  Variables,
+} from "@urql/exchange-graphcache";
 import { NextUrqlClientConfig } from "next-urql";
 import {
   LogoutMutation,
@@ -10,7 +16,7 @@ import {
 } from "../generated/graphql";
 import { betterUpdateQuery } from "./betterUpdateQuery";
 import { filter, pipe, tap } from "wonka";
-import { Exchange } from "urql";
+import { Exchange, stringifyVariables } from "urql";
 import Router, { useRouter } from "next/dist/client/router";
 
 const errorExchange: Exchange =
@@ -19,7 +25,6 @@ const errorExchange: Exchange =
     return pipe(
       forward(ops$),
       tap(({ error }) => {
-        // If the OperationResult has an error send a request to sentry
         // console.log("ERROR HANDLER :: ", error);
         if (error) {
           if (error.message.includes("Not Authenticated")) {
@@ -30,11 +35,76 @@ const errorExchange: Exchange =
     );
   };
 
+export const cursorPagination = (): Resolver => {
+  return (_parent, fieldArgs, cache, info) => {
+    const { parentKey: entityKey, fieldName } = info;
+    // console.log("E: ", entityKey, "\tP: ", fieldName);
+    const allFields = cache.inspectFields(entityKey);
+    // console.log("allfields : ", allFields);
+    const fieldInfos = allFields.filter((info) => info.fieldName === fieldName);
+    const size = fieldInfos.length;
+    // console.log("fieldInfos : ", fieldInfos, "\nsize : ", size);
+    if (size === 0) {
+      return undefined;
+    }
+
+    // console.log("fieldArgs: ", fieldArgs);
+
+    const fieldKey = `${fieldName}(${stringifyVariables(fieldArgs)})`;
+    const isItInTheCache = cache.resolve(
+      cache.resolve(entityKey, fieldKey) as string,
+      "posts"
+    );
+    info.partial = !isItInTheCache;
+
+    // console.log(
+    //   "FIELDKEY :: ",
+    //   fieldKey,
+    //   "  -- isItInTheCache : ",
+    //   isItInTheCache
+    // );
+
+    const results: string[] = [];
+    let hasMore: boolean = true;
+
+    fieldInfos.forEach((fi) => {
+      const key = cache.resolve(entityKey, fi.fieldKey) as string;
+      const data = cache.resolve(key, "posts") as string[];
+      const _hasMore = cache.resolve(key, "hasMore") as boolean;
+      if (!_hasMore) {
+        hasMore = _hasMore;
+      }
+
+      results.push(...data);
+      // console.log(
+      //   "FIELDKEY : ",
+      //   fi.fieldKey,
+      //   "\n DATA :: ",
+      //   data,
+      // );
+    });
+
+    // console.log("results:; ", results);
+
+    return {
+      __typename: "PaginatedPosts",
+      hasMore,
+      posts: results,
+    };
+  };
+};
+
 export const createUrqlClient: NextUrqlClientConfig = (ssrExchange: any) => ({
   url: "http://localhost:3000/graphql",
   exchanges: [
     dedupExchange,
     cacheExchange({
+      keys: {
+        PaginatedPosts: () => null,
+      },
+      resolvers: {
+        Query: { posts: cursorPagination() },
+      },
       updates: {
         Mutation: {
           logout: (_result, args, cache, info) => {

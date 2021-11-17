@@ -1,19 +1,19 @@
-// import React from "react";
 import { withUrqlClient } from "next-urql";
 import { Layout } from "../components/Layout";
-import { NavBar } from "../components/NavBar";
 import { usePostsQuery } from "../generated/graphql";
 import { createUrqlClient } from "../utils/createUrqlClients";
 import NextLink from "next/link";
 import { Box, Flex, Heading, Link, Stack, Text } from "@chakra-ui/layout";
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@chakra-ui/button";
 
 const Index = () => {
+  const [variables, setvariables] = useState({
+    limit: 10,
+    cursor: null as null | string,
+  });
   const [{ data, fetching }] = usePostsQuery({
-    variables: {
-      limit: 10,
-    },
+    variables,
   });
 
   if (!fetching && !data) {
@@ -42,7 +42,7 @@ const Index = () => {
           <div>Loading ...</div>
         ) : (
           <Stack spacing={8}>
-            {data!.posts.map((p) => (
+            {data!.posts.posts.map((p) => (
               <Box key={p.id} p={5} shadow="md" borderWidth="1px">
                 <Heading fontSize="xl">{p.title}</Heading>
                 <Text mt={4}>{p.textSnippet}</Text>
@@ -51,7 +51,7 @@ const Index = () => {
           </Stack>
         )}
 
-        {data ? (
+        {data && data.posts.hasMore ? (
           <Flex>
             <Button
               isLoading={fetching}
@@ -59,6 +59,13 @@ const Index = () => {
               size="md"
               m={"auto"}
               my={8}
+              onClick={() => {
+                setvariables({
+                  limit: variables.limit,
+                  cursor:
+                    data.posts.posts[data.posts.posts.length - 1].createdAt,
+                });
+              }}
             >
               Load more
             </Button>
