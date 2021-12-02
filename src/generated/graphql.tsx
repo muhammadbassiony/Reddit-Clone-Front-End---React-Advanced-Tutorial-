@@ -30,6 +30,7 @@ export type Mutation = {
   logout: Scalars['Boolean'];
   register: UserResponse;
   updatePost?: Maybe<Post>;
+  vote: Scalars['Boolean'];
 };
 
 
@@ -70,6 +71,12 @@ export type MutationUpdatePostArgs = {
   title: Scalars['String'];
 };
 
+
+export type MutationVoteArgs = {
+  postId: Scalars['Int'];
+  value: Scalars['Int'];
+};
+
 export type PaginatedPosts = {
   __typename?: 'PaginatedPosts';
   hasMore: Scalars['Boolean'];
@@ -79,6 +86,7 @@ export type PaginatedPosts = {
 export type Post = {
   __typename?: 'Post';
   createdAt: Scalars['String'];
+  creator: User;
   creatorId: Scalars['Float'];
   id: Scalars['Int'];
   points: Scalars['Float'];
@@ -192,7 +200,7 @@ export type PostsQueryVariables = Exact<{
 }>;
 
 
-export type PostsQuery = { __typename?: 'Query', posts: { __typename?: 'PaginatedPosts', hasMore: boolean, posts: Array<{ __typename?: 'Post', id: number, title: string, createdAt: string, points: number, creatorId: number, updatedAt: string, textSnippet: string }> } };
+export type PostsQuery = { __typename?: 'Query', posts: { __typename?: 'PaginatedPosts', hasMore: boolean, posts: Array<{ __typename?: 'Post', title: string, id: number, points: number, creatorId: number, textSnippet: string, createdAt: string, updatedAt: string, creator: { __typename?: 'User', username: string, id: number } }> } };
 
 export const RegularErrorFragmentDoc = gql`
     fragment RegularError on FieldError {
@@ -297,16 +305,20 @@ export function useMeQuery(options: Omit<Urql.UseQueryArgs<MeQueryVariables>, 'q
 export const PostsDocument = gql`
     query Posts($limit: Int!, $cursor: String) {
   posts(limit: $limit, cursor: $cursor) {
+    hasMore
     posts {
-      id
+      creator {
+        username
+        id
+      }
       title
-      createdAt
+      id
       points
       creatorId
-      updatedAt
       textSnippet
+      createdAt
+      updatedAt
     }
-    hasMore
   }
 }
     `;

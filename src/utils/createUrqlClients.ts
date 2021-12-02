@@ -38,12 +38,11 @@ const errorExchange: Exchange =
 export const cursorPagination = (): Resolver => {
   return (_parent, fieldArgs, cache, info) => {
     const { parentKey: entityKey, fieldName } = info;
-    // console.log("E: ", entityKey, "\tP: ", fieldName);
+
     const allFields = cache.inspectFields(entityKey);
-    // console.log("allfields : ", allFields);
     const fieldInfos = allFields.filter((info) => info.fieldName === fieldName);
     const size = fieldInfos.length;
-    // console.log("fieldInfos : ", fieldInfos, "\nsize : ", size);
+
     if (size === 0) {
       return undefined;
     }
@@ -57,13 +56,6 @@ export const cursorPagination = (): Resolver => {
     );
     info.partial = !isItInTheCache;
 
-    // console.log(
-    //   "FIELDKEY :: ",
-    //   fieldKey,
-    //   "  -- isItInTheCache : ",
-    //   isItInTheCache
-    // );
-
     const results: string[] = [];
     let hasMore: boolean = true;
 
@@ -76,12 +68,6 @@ export const cursorPagination = (): Resolver => {
       }
 
       results.push(...data);
-      // console.log(
-      //   "FIELDKEY : ",
-      //   fi.fieldKey,
-      //   "\n DATA :: ",
-      //   data,
-      // );
     });
 
     // console.log("results:; ", results);
@@ -107,6 +93,15 @@ export const createUrqlClient: NextUrqlClientConfig = (ssrExchange: any) => ({
       },
       updates: {
         Mutation: {
+          createPost: (_result, args, cache, info) => {
+            const allFields = cache.inspectFields("Query");
+            const fieldInfos = allFields.filter(
+              (info) => info.fieldName === "posts"
+            );
+            fieldInfos.forEach((fi) => {
+              cache.invalidate("Query", "posts", fi.arguments || {});
+            });
+          },
           logout: (_result, args, cache, info) => {
             betterUpdateQuery<LogoutMutation, MeQuery>(
               cache,
