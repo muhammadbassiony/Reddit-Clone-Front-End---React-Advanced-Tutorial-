@@ -14,6 +14,7 @@ import {
   LoginMutation,
   RegisterMutation,
   VoteMutationVariables,
+  DeletePostMutationVariables,
 } from "../generated/graphql";
 import { betterUpdateQuery } from "./betterUpdateQuery";
 import { filter, pipe, tap } from "wonka";
@@ -95,7 +96,7 @@ export const createUrqlClient: NextUrqlClientConfig = (
   return {
     url: "http://localhost:3000/graphql",
     fetchOptions: {
-      credentials: "include",
+      credentials: "include" as const,
       headers: cookie ? { cookie } : undefined,
     },
     exchanges: [
@@ -109,6 +110,12 @@ export const createUrqlClient: NextUrqlClientConfig = (
         },
         updates: {
           Mutation: {
+            deletePost: (_result, args, cache, info) => {
+              cache.invalidate({
+                __typename: "Post",
+                id: (args as DeletePostMutationVariables).deletePostId,
+              });
+            },
             vote: (_result, args, cache, info) => {
               const { postId, value } = args as VoteMutationVariables;
               const data = cache.readFragment(

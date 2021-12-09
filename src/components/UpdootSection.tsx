@@ -40,7 +40,7 @@ export const UpdootSection: React.FC<UpdootSectionProps> = ({ post }) => {
         }}
         isLoading={loadingState === "downdoot-loading"}
         icon={<ArrowDownIcon />}
-        colorScheme={post.voteStatus === -1 ? "red" : undefined}
+        colorScheme={post.voteStatus === -1 ? "orange" : undefined}
         // colorScheme="blue"
         w={6}
         h={6}
