@@ -50,8 +50,6 @@ export const cursorPagination = (): Resolver => {
       return undefined;
     }
 
-    // console.log("fieldArgs: ", fieldArgs);
-
     const fieldKey = `${fieldName}(${stringifyVariables(fieldArgs)})`;
     const isItInTheCache = cache.resolve(
       cache.resolve(entityKey, fieldKey) as string,
@@ -65,6 +63,7 @@ export const cursorPagination = (): Resolver => {
     fieldInfos.forEach((fi) => {
       const key = cache.resolve(entityKey, fi.fieldKey) as string;
       const data = cache.resolve(key, "posts") as string[];
+
       const _hasMore = cache.resolve(key, "hasMore") as boolean;
       if (!_hasMore) {
         hasMore = _hasMore;
@@ -113,7 +112,7 @@ export const createUrqlClient: NextUrqlClientConfig = (
             deletePost: (_result, args, cache, info) => {
               cache.invalidate({
                 __typename: "Post",
-                id: (args as DeletePostMutationVariables).deletePostId,
+                id: (args as DeletePostMutationVariables).id,
               });
             },
             vote: (_result, args, cache, info) => {

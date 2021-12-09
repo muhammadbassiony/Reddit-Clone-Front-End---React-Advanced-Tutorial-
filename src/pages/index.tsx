@@ -62,7 +62,7 @@ const Index = () => {
                         aria-label="Delete Post"
                         icon={<DeleteIcon />}
                         onClick={() => {
-                          deletePost({ deletePostId: p.id });
+                          deletePost({ id: p.id });
                         }}
                       />
                     </Flex>
