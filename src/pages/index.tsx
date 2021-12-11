@@ -21,16 +21,17 @@ const Index = () => {
   });
 
   const [{ data: meData }] = useMeQuery();
-  const [{ data, fetching }] = usePostsQuery({
+  const [{ data, error, fetching }] = usePostsQuery({
     variables,
   });
 
   if (!fetching && !data) {
     return (
-      <Flex align={"center"}>
-        <Box bg="tomato" w="100%" color="white" p={4}>
+      <Flex align={"center"} bg="tomato" direction={"column"} color={"white"}>
+        <Box w="100%" color="white" p={4} fontSize={40}>
           Error
         </Box>
+        <Box>{error?.message}</Box>
       </Flex>
     );
   }
