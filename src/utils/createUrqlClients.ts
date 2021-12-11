@@ -89,7 +89,7 @@ export const createUrqlClient: NextUrqlClientConfig = (
   let cookie = "";
 
   if (isServer()) {
-    cookie = ctx.req.headers.cookie;
+    cookie = ctx?.req?.headers?.cookie;
   }
 
   return {
@@ -109,13 +109,13 @@ export const createUrqlClient: NextUrqlClientConfig = (
         },
         updates: {
           Mutation: {
-            deletePost: (_result, args, cache, info) => {
+            deletePost: (_result, args, cache) => {
               cache.invalidate({
                 __typename: "Post",
                 id: (args as DeletePostMutationVariables).id,
               });
             },
-            vote: (_result, args, cache, info) => {
+            vote: (_result, args, cache) => {
               const { postId, value } = args as VoteMutationVariables;
               const data = cache.readFragment(
                 gql`
@@ -146,7 +146,7 @@ export const createUrqlClient: NextUrqlClientConfig = (
                 );
               }
             },
-            createPost: (_result, args, cache, info) => {
+            createPost: (_result, args, cache) => {
               const allFields = cache.inspectFields("Query");
               const fieldInfos = allFields.filter(
                 (info) => info.fieldName === "posts"
@@ -155,7 +155,7 @@ export const createUrqlClient: NextUrqlClientConfig = (
                 cache.invalidate("Query", "posts", fi.arguments || {});
               });
             },
-            logout: (_result, args, cache, info) => {
+            logout: (_result, args, cache) => {
               betterUpdateQuery<LogoutMutation, MeQuery>(
                 cache,
                 { query: MeDocument },
@@ -163,7 +163,7 @@ export const createUrqlClient: NextUrqlClientConfig = (
                 () => ({ me: null })
               );
             },
-            login: (_result, args, cache, info) => {
+            login: (_result, args, cache) => {
               betterUpdateQuery<LoginMutation, MeQuery>(
                 cache,
                 { query: MeDocument },
@@ -179,7 +179,7 @@ export const createUrqlClient: NextUrqlClientConfig = (
                 }
               );
             },
-            register: (_result, args, cache, info) => {
+            register: (_result, args, cache) => {
               betterUpdateQuery<RegisterMutation, MeQuery>(
                 cache,
                 { query: MeDocument },

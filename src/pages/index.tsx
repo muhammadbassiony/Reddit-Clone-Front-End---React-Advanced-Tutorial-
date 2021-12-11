@@ -1,25 +1,29 @@
 import { withUrqlClient } from "next-urql";
 import { Layout } from "../components/Layout";
-import { useDeletePostMutation, usePostsQuery } from "../generated/graphql";
+import {
+  useDeletePostMutation,
+  useMeQuery,
+  usePostsQuery,
+} from "../generated/graphql";
 import { createUrqlClient } from "../utils/createUrqlClients";
 import NextLink from "next/link";
 import { Box, Flex, Heading, Link, Stack, Text } from "@chakra-ui/layout";
 import React, { useState } from "react";
 import { Button } from "@chakra-ui/button";
-import { ArrowDownIcon, ArrowUpIcon, DeleteIcon } from "@chakra-ui/icons";
-import { IconButton } from "@chakra-ui/react";
+
 import { UpdootSection } from "../components/UpdootSection";
+import { EditDeletepostButtons } from "../components/EditDeletePostButtons";
 
 const Index = () => {
   const [variables, setvariables] = useState({
     limit: 15,
     cursor: null as null | string,
   });
+
+  const [{ data: meData }] = useMeQuery();
   const [{ data, fetching }] = usePostsQuery({
     variables,
   });
-
-  const [, deletePost] = useDeletePostMutation();
 
   if (!fetching && !data) {
     return (
@@ -51,20 +55,15 @@ const Index = () => {
                       </Link>
                     </NextLink>
                     <Text color="teal">posted by {p.creator.username}</Text>
-                    <Flex align="center">
-                      <Text mt={4} flex={1}>
-                        {p.textSnippet}
-                      </Text>
+                    <Flex align="center" mt={2}>
+                      <Text flex={1}>{p.textSnippet}</Text>
 
-                      <IconButton
-                        ml="auto"
-                        colorScheme="red"
-                        aria-label="Delete Post"
-                        icon={<DeleteIcon />}
-                        onClick={() => {
-                          deletePost({ id: p.id });
-                        }}
-                      />
+                      <Box ml="auto">
+                        <EditDeletepostButtons
+                          id={p.id}
+                          creatorId={p.creatorId}
+                        />
+                      </Box>
                     </Flex>
                   </Box>
                 </Flex>
