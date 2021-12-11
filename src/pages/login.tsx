@@ -9,64 +9,67 @@ import { toErrorMap } from "../utils/toErrorMap";
 import { useRouter } from "next/dist/client/router";
 import { withUrqlClient } from "next-urql";
 import { createUrqlClient } from "../utils/createUrqlClients";
-import { Flex, Link } from "@chakra-ui/react";
+import { Flex, layout, Link } from "@chakra-ui/react";
 import NextLink from "next/link";
+import { Layout } from "../components/Layout";
 
 const Login: React.FC<{}> = ({}) => {
   const router = useRouter();
   const [_, login] = useLoginMutation();
 
   return (
-    <Wrapper variant="small">
-      <Formik
-        initialValues={{ usernameOrEmail: "", password: "" }}
-        onSubmit={async (values, { setErrors }) => {
-          const response = await login(values);
-          if (response.data?.login.errors) {
-            setErrors(toErrorMap(response.data.login.errors));
-          } else if (response.data?.login.user) {
-            if (typeof router.query.next === "string") {
-              router.push(router.query.next);
-            } else {
-              router.push("/");
+    <Layout>
+      <Wrapper variant="small">
+        <Formik
+          initialValues={{ usernameOrEmail: "", password: "" }}
+          onSubmit={async (values, { setErrors }) => {
+            const response = await login(values);
+            if (response.data?.login.errors) {
+              setErrors(toErrorMap(response.data.login.errors));
+            } else if (response.data?.login.user) {
+              if (typeof router.query.next === "string") {
+                router.push(router.query.next);
+              } else {
+                router.push("/");
+              }
             }
-          }
-        }}
-      >
-        {({ isSubmitting }) => (
-          <Form>
-            <InputField
-              name="usernameOrEmail"
-              label="Username Or Email"
-              placeholder="username or email"
-            ></InputField>
-            <Box mt={4}>
+          }}
+        >
+          {({ isSubmitting }) => (
+            <Form>
               <InputField
-                name="password"
-                label="Password"
-                placeholder="password"
-                type="password"
+                name="usernameOrEmail"
+                label="Username Or Email"
+                placeholder="username or email"
               ></InputField>
-            </Box>
-            <Flex mt={3}>
-              <NextLink href="/forgot-password">
-                <Link color="blue.500" ml={"auto"}>
-                  Forgot Password
-                </Link>
-              </NextLink>
-            </Flex>
-            <Button
-              mt={4}
-              type="submit"
-              colorScheme="teal"
-              isLoading={isSubmitting}
-            >
-              Log In
-            </Button>
-          </Form>
-        )}
-      </Formik>
-    </Wrapper>
+              <Box mt={4}>
+                <InputField
+                  name="password"
+                  label="Password"
+                  placeholder="password"
+                  type="password"
+                ></InputField>
+              </Box>
+              <Flex mt={3}>
+                <NextLink href="/forgot-password">
+                  <Link color="blue.500" ml={"auto"}>
+                    Forgot Password
+                  </Link>
+                </NextLink>
+              </Flex>
+              <Button
+                mt={4}
+                type="submit"
+                colorScheme="teal"
+                isLoading={isSubmitting}
+              >
+                Log In
+              </Button>
+            </Form>
+          )}
+        </Formik>
+      </Wrapper>
+    </Layout>
   );
 };
 
