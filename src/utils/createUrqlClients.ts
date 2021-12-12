@@ -1,11 +1,5 @@
 import { dedupExchange, fetchExchange, gql } from "@urql/core";
-import {
-  cacheExchange,
-  NullArray,
-  query,
-  Resolver,
-  Variables,
-} from "@urql/exchange-graphcache";
+import { Cache, cacheExchange, Resolver } from "@urql/exchange-graphcache";
 import { NextUrqlClientConfig } from "next-urql";
 import {
   LogoutMutation,
@@ -17,7 +11,7 @@ import {
   DeletePostMutationVariables,
 } from "../generated/graphql";
 import { betterUpdateQuery } from "./betterUpdateQuery";
-import { filter, pipe, tap } from "wonka";
+import { pipe, tap } from "wonka";
 import { Exchange, stringifyVariables } from "urql";
 import Router, { useRouter } from "next/dist/client/router";
 import { isServer } from "./isServer";
@@ -81,6 +75,14 @@ export const cursorPagination = (): Resolver => {
     };
   };
 };
+
+function invalidateAllPosts(cache: Cache) {
+  const allFields = cache.inspectFields("Query");
+  const fieldInfos = allFields.filter((info) => info.fieldName === "posts");
+  fieldInfos.forEach((fi) => {
+    cache.invalidate("Query", "posts", fi.arguments || {});
+  });
+}
 
 export const createUrqlClient: NextUrqlClientConfig = (
   ssrExchange: any,
@@ -147,13 +149,7 @@ export const createUrqlClient: NextUrqlClientConfig = (
               }
             },
             createPost: (_result, args, cache) => {
-              const allFields = cache.inspectFields("Query");
-              const fieldInfos = allFields.filter(
-                (info) => info.fieldName === "posts"
-              );
-              fieldInfos.forEach((fi) => {
-                cache.invalidate("Query", "posts", fi.arguments || {});
-              });
+              invalidateAllPosts(cache);
             },
             logout: (_result, args, cache) => {
               betterUpdateQuery<LogoutMutation, MeQuery>(
@@ -178,6 +174,8 @@ export const createUrqlClient: NextUrqlClientConfig = (
                   }
                 }
               );
+
+              invalidateAllPosts(cache);
             },
             register: (_result, args, cache) => {
               betterUpdateQuery<RegisterMutation, MeQuery>(
