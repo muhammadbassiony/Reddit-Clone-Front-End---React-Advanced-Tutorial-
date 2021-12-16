@@ -7,8 +7,7 @@ import { Button } from "@chakra-ui/button";
 import { useRegisterMutation } from "../generated/graphql";
 import { toErrorMap } from "../utils/toErrorMap";
 import { useRouter } from "next/dist/client/router";
-import { withUrqlClient } from "next-urql";
-import { createUrqlClient } from "../utils/createUrqlClients";
+import { withApollo } from "../utils/withApollo";
 import { Layout } from "../components/Layout";
 
 interface registerProps {}
@@ -69,4 +68,4 @@ const Register: React.FC<registerProps> = ({}) => {
   );
 };
 
-export default Register;
+export default withApollo({ ssr: false })(Register);

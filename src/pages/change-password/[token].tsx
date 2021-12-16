@@ -2,15 +2,14 @@ import { Button } from "@chakra-ui/button";
 import { Box, Flex, Link } from "@chakra-ui/layout";
 import { Formik, Form } from "formik";
 import { NextPage } from "next";
-import { withUrqlClient } from "next-urql";
 import { useRouter } from "next/dist/client/router";
 import React, { useState } from "react";
 import InputField from "../../components/InputField";
 import { Wrapper } from "../../components/Wrapper";
 import { useChangePasswordMutation } from "../../generated/graphql";
-import { createUrqlClient } from "../../utils/createUrqlClients";
 import { toErrorMap } from "../../utils/toErrorMap";
 import NextLink from "next/link";
+import { withApollo } from "../../utils/withApollo";
 
 const ChangePassword: NextPage<{ token: string }> = () => {
   const router = useRouter();
@@ -80,4 +79,4 @@ const ChangePassword: NextPage<{ token: string }> = () => {
   );
 };
 
-export default ChangePassword;
+export default withApollo({ ssr: false })(ChangePassword);

@@ -1,14 +1,13 @@
 import { Button } from "@chakra-ui/button";
-import { Box, Flex, Link } from "@chakra-ui/layout";
+import { Box } from "@chakra-ui/layout";
 import { Formik, Form } from "formik";
-import { withUrqlClient } from "next-urql";
 import router, { useRouter } from "next/dist/client/router";
 import React, { useEffect } from "react";
 import InputField from "../components/InputField";
 import { Layout } from "../components/Layout";
-import { createUrqlClient } from "../utils/createUrqlClients";
 import { useCreatePostMutation, useMeQuery } from "../generated/graphql";
 import { useIsAuth } from "../utils/useIsAuth";
+import { withApollo } from "../utils/withApollo";
 
 const CreatePost: React.FC = () => {
   const router = useRouter();
@@ -59,4 +58,4 @@ const CreatePost: React.FC = () => {
   );
 };
 
-export default CreatePost;
+export default withApollo({ ssr: false })(CreatePost);

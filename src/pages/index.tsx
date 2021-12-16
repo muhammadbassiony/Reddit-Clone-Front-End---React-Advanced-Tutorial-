@@ -1,22 +1,15 @@
-import { withUrqlClient } from "next-urql";
 import { Layout } from "../components/Layout";
-import {
-  PostsQuery,
-  useDeletePostMutation,
-  useMeQuery,
-  usePostsQuery,
-} from "../generated/graphql";
-import { createUrqlClient } from "../utils/createUrqlClients";
+import { usePostsQuery } from "../generated/graphql";
 import NextLink from "next/link";
 import { Box, Flex, Heading, Link, Stack, Text } from "@chakra-ui/layout";
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@chakra-ui/button";
 
 import { UpdootSection } from "../components/UpdootSection";
 import { EditDeletepostButtons } from "../components/EditDeletePostButtons";
+import { withApollo } from "../utils/withApollo";
 
 const Index = () => {
-  const { data: meData } = useMeQuery();
   const { data, error, loading, fetchMore, variables } = usePostsQuery({
     variables: {
       limit: 15,
@@ -88,26 +81,6 @@ const Index = () => {
                     cursor:
                       data.posts.posts[data.posts.posts.length - 1].createdAt,
                   },
-                  // updateQuery: (
-                  //   previousValue,
-                  //   { fetchMoreResult }
-                  // ): PostsQuery => {
-                  //   if (!fetchMoreResult) {
-                  //     return previousValue as PostsQuery;
-                  //   }
-
-                  //   return {
-                  //     __typename: "Query",
-                  //     posts: {
-                  //       __typename: "PaginatedPosts",
-                  //       hasMore: fetchMoreResult.posts.hasMore,
-                  //       posts: [
-                  //         ...previousValue.posts.posts,
-                  //         ...fetchMoreResult.posts.posts,
-                  //       ],
-                  //     },
-                  //   };
-                  // },
                 });
               }}
             >
@@ -120,5 +93,4 @@ const Index = () => {
   );
 };
 
-export default Index;
-// export default withUrqlClient(createUrqlClient, { ssr: true })(Index);
+export default withApollo({ ssr: true })(Index);
