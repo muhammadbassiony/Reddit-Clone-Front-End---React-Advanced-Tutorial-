@@ -6,7 +6,7 @@ export const useGetPostFromUrl = () => {
   const postId = useGetIntId();
 
   return usePostQuery({
-    pause: postId === -1,
+    skip: postId === -1,
     variables: { postId: postId },
   });
 };

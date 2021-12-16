@@ -17,14 +17,14 @@ const EditPost = ({}) => {
   //   const postId =
   //     typeof router.query.id === "string" ? parseInt(router.query.id) : -1;
   const postId = useGetIntId();
-  const [{ data, fetching }] = usePostQuery({
-    pause: postId === -1,
+  const { data, loading } = usePostQuery({
+    skip: postId === -1,
     variables: { postId: postId },
   });
 
-  const [, updatePost] = useUpdatePostMutation();
+  const [updatePost] = useUpdatePostMutation();
 
-  if (fetching) {
+  if (loading) {
     return (
       <Layout>
         <div>...Loading </div>
@@ -56,8 +56,10 @@ const EditPost = ({}) => {
           //     console.log(error);
           //   }
           await updatePost({
-            id: postId,
-            ...values,
+            variables: {
+              id: postId,
+              ...values,
+            },
           });
           router.back();
         }}
@@ -93,4 +95,4 @@ const EditPost = ({}) => {
   );
 };
 
-export default withUrqlClient(createUrqlClient)(EditPost);
+export default EditPost;

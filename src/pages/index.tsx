@@ -1,6 +1,7 @@
 import { withUrqlClient } from "next-urql";
 import { Layout } from "../components/Layout";
 import {
+  PostsQuery,
   useDeletePostMutation,
   useMeQuery,
   usePostsQuery,
@@ -15,17 +16,16 @@ import { UpdootSection } from "../components/UpdootSection";
 import { EditDeletepostButtons } from "../components/EditDeletePostButtons";
 
 const Index = () => {
-  const [variables, setvariables] = useState({
-    limit: 15,
-    cursor: null as null | string,
+  const { data: meData } = useMeQuery();
+  const { data, error, loading, fetchMore, variables } = usePostsQuery({
+    variables: {
+      limit: 15,
+      cursor: null as null | string,
+    },
+    notifyOnNetworkStatusChange: true,
   });
 
-  const [{ data: meData }] = useMeQuery();
-  const [{ data, error, fetching }] = usePostsQuery({
-    variables,
-  });
-
-  if (!fetching && !data) {
+  if (!loading && !data) {
     return (
       <Flex align={"center"} bg="tomato" direction={"column"} color={"white"}>
         <Box w="100%" color="white" p={4} fontSize={40}>
@@ -39,7 +39,7 @@ const Index = () => {
   return (
     <>
       <Layout>
-        {!data && fetching ? (
+        {!data && loading ? (
           <div>Loading ...</div>
         ) : (
           <Stack spacing={8}>
@@ -76,16 +76,38 @@ const Index = () => {
         {data && data.posts.hasMore ? (
           <Flex>
             <Button
-              isLoading={fetching}
+              isLoading={loading}
               colorScheme="teal"
               size="md"
               m={"auto"}
               my={8}
               onClick={() => {
-                setvariables({
-                  limit: variables.limit,
-                  cursor:
-                    data.posts.posts[data.posts.posts.length - 1].createdAt,
+                fetchMore({
+                  variables: {
+                    limit: variables?.limit,
+                    cursor:
+                      data.posts.posts[data.posts.posts.length - 1].createdAt,
+                  },
+                  // updateQuery: (
+                  //   previousValue,
+                  //   { fetchMoreResult }
+                  // ): PostsQuery => {
+                  //   if (!fetchMoreResult) {
+                  //     return previousValue as PostsQuery;
+                  //   }
+
+                  //   return {
+                  //     __typename: "Query",
+                  //     posts: {
+                  //       __typename: "PaginatedPosts",
+                  //       hasMore: fetchMoreResult.posts.hasMore,
+                  //       posts: [
+                  //         ...previousValue.posts.posts,
+                  //         ...fetchMoreResult.posts.posts,
+                  //       ],
+                  //     },
+                  //   };
+                  // },
                 });
               }}
             >
@@ -98,4 +120,5 @@ const Index = () => {
   );
 };
 
-export default withUrqlClient(createUrqlClient, { ssr: true })(Index);
+export default Index;
+// export default withUrqlClient(createUrqlClient, { ssr: true })(Index);
