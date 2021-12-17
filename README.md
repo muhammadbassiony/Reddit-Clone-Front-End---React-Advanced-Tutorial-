@@ -4,8 +4,15 @@ Based on the Fullstack React GraphQL TypeScript Tutorial by Ben Awad at https://
 
 ## How to run
 
-First download the backend and run it then run using the following command
+First Download the project and install all the packages using 
+```
+npm install
+```
+
+Then run the project  then run using the following command
 
 ```
 yarn dev
 ```
+
+to be able to get the project working you will also require the [back end](https://github.com/muhammadbassiony/Reddit-Clone-Back-End---React-Advanced-Tutorial-)
